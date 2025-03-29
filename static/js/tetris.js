@@ -67,34 +67,62 @@ class TetrisGame {
     }
 
     initControls() {
-        // Touch controls
-        document.getElementById('left-btn').addEventListener('touchstart', () => this.movePiece(-1, 0));
-        document.getElementById('right-btn').addEventListener('touchstart', () => this.movePiece(1, 0));
-        document.getElementById('down-btn').addEventListener('touchstart', () => this.movePiece(0, 1));
-        document.getElementById('rotate-btn').addEventListener('touchstart', () => this.rotatePiece());
-        document.getElementById('drop-btn').addEventListener('touchstart', () => this.hardDrop());
-        document.getElementById('hold-btn').addEventListener('touchstart', () => this.holdPiece());
-        document.getElementById('pause-btn').addEventListener('touchstart', () => this.togglePause());
-        document.getElementById('restart-btn').addEventListener('touchstart', () => this.restart());
-
-        // Keyboard controls
+        // Add keyboard controls
         document.addEventListener('keydown', (e) => {
-            if (!this.gameOver && !this.paused) {
-                switch(e.key) {
-                    case 'ArrowLeft': this.movePiece(-1, 0); break;
-                    case 'ArrowRight': this.movePiece(1, 0); break;
-                    case 'ArrowDown': this.movePiece(0, 1); break;
-                    case 'ArrowUp': this.rotatePiece(); break;
-                    case ' ': this.hardDrop(); break;
-                    case 'c': this.holdPiece(); break;
-                }
+            if (this.gameOver) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    this.movePiece(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    this.movePiece(1, 0);
+                    break;
+                case 'ArrowDown':
+                    this.movePiece(0, 1);
+                    break;
+                case 'ArrowUp':
+                    this.rotatePiece();
+                    break;
+                case ' ':
+                    this.hardDrop();
+                    break;
+                case 'c':
+                case 'C':
+                    this.holdPiece();
+                    break;
+                case 'p':
+                case 'P':
+                    this.togglePause();
+                    break;
             }
-            if (e.key === 'p') this.togglePause();
-            if (e.key === 'r' && this.gameOver) this.restart();
         });
 
-        // Prevent default touch behaviors
-        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        // Add touch controls
+        const addButtonEvents = (buttonId, action) => {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+
+            const handleEvent = (e) => {
+                e.preventDefault();
+                if (!this.gameOver) {
+                    action();
+                }
+            };
+
+            button.addEventListener('click', handleEvent);
+            button.addEventListener('touchstart', handleEvent);
+        };
+
+        addButtonEvents('left-btn', () => this.movePiece(-1, 0));
+        addButtonEvents('right-btn', () => this.movePiece(1, 0));
+        addButtonEvents('down-btn', () => this.movePiece(0, 1));
+        addButtonEvents('rotate-btn', () => this.rotatePiece());
+        addButtonEvents('drop-btn', () => this.hardDrop());
+        addButtonEvents('hold-btn', () => this.holdPiece());
+        addButtonEvents('pause-btn', () => this.togglePause());
+        addButtonEvents('unpause-btn', () => this.togglePause());
+        addButtonEvents('restart-btn', () => this.restart());
     }
 
     initAudio() {
@@ -309,19 +337,22 @@ class TetrisGame {
     }
 
     togglePause() {
-        if (!this.gameOver) {
-            this.paused = !this.paused;
-            if (this.paused) {
-                this.bgMusic.pause();
-            } else {
-                this.bgMusic.play();
-            }
+        this.paused = !this.paused;
+        const pauseOverlay = document.getElementById('pause-overlay');
+        
+        if (this.paused) {
+            pauseOverlay.classList.remove('hidden');
+            this.gameLoop = null;
+        } else {
+            pauseOverlay.classList.add('hidden');
+            this.startGameLoop();
         }
     }
 
     restart() {
         this.initGame();
         document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('pause-overlay').classList.add('hidden');
         this.bgMusic.currentTime = 0;
         this.bgMusic.play();
     }

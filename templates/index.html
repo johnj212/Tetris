@@ -12,25 +12,38 @@
         <div id="game-info">
             <div id="score">Score: 0</div>
             <div id="level">Level: 1</div>
-            <div id="next-piece">Next Piece:</div>
+            <div id="next-piece">Next:</div>
             <canvas id="nextPieceCanvas"></canvas>
-            <div id="held-piece">Held Piece:</div>
+            <div id="held-piece">Hold:</div>
             <canvas id="heldPieceCanvas"></canvas>
         </div>
     </div>
 
     <div id="controls">
-        <div id="touch-controls">
-            <button id="rotate-btn">Rotate</button>
-            <button id="hold-btn">Hold</button>
-            <div id="direction-controls">
-                <button id="left-btn">←</button>
-                <button id="down-btn">↓</button>
-                <button id="right-btn">→</button>
+        <div class="gameboy-controls">
+            <div class="d-pad">
+                <div class="d-pad-row">
+                    <button id="up-btn">↑</button>
+                </div>
+                <div class="d-pad-row">
+                    <button id="left-btn">←</button>
+                    <button id="right-btn">→</button>
+                </div>
+                <div class="d-pad-row">
+                    <button id="down-btn">↓</button>
+                </div>
             </div>
-            <button id="drop-btn">Drop</button>
+            <div class="action-buttons">
+                <div class="action-row">
+                    <button id="rotate-btn">A</button>
+                </div>
+                <div class="action-row">
+                    <button id="hold-btn">B</button>
+                    <button id="drop-btn">C</button>
+                </div>
+            </div>
         </div>
-        <button id="pause-btn">Pause</button>
+        <button id="pause-btn">⏸</button>
     </div>
 
     <div id="game-over" class="hidden">
@@ -38,6 +51,13 @@
             <h2>Game Over!</h2>
             <p>Final Score: <span id="final-score">0</span></p>
             <button id="restart-btn">Play Again</button>
+        </div>
+    </div>
+
+    <div id="pause-overlay" class="hidden">
+        <div class="pause-content">
+            <h2>PAUSED</h2>
+            <button id="unpause-btn">Continue</button>
         </div>
     </div>
 
