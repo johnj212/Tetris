@@ -390,4 +390,14 @@ class TetrisGame {
 // Start the game when the page loads
 window.addEventListener('load', () => {
     new TetrisGame();
-}); 
+});
+
+// Export the game components
+module.exports = {
+    TetrisGame,
+    GRID_WIDTH,
+    GRID_HEIGHT,
+    BLOCK_SIZE,
+    COLORS,
+    SHAPES
+}; 
