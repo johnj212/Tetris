@@ -28,11 +28,6 @@ A modern web-based implementation of the classic Tetris game, optimized for mobi
 ```bash
 pip install -r requirements.txt
 ```
-3. Download the sound effects:
-```bash
-python download_sounds.py
-```
-
 ## How to Play
 
 Start the server:
