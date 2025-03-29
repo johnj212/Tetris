@@ -12,6 +12,7 @@ A modern implementation of the classic Tetris game using Python and Pygame.
 - Ghost piece (shows where the piece will land)
 - Modern UI elements
 - Game over screen with restart option
+- Classic Tetris music and sound effects
 
 ## Requirements
 
@@ -24,6 +25,10 @@ A modern implementation of the classic Tetris game using Python and Pygame.
 2. Install the required dependencies:
 ```bash
 pip install -r requirements.txt
+```
+3. Download the sound effects:
+```bash
+python download_sounds.py
 ```
 
 ## How to Play
@@ -42,6 +47,16 @@ python tetris.py
 - **Space**: Hard drop (instantly drop piece)
 - **C**: Hold piece
 - **R**: Restart game (when game is over)
+
+### Sound Effects
+
+The game includes the following sound effects:
+- Move sound when moving pieces
+- Rotation sound when rotating pieces
+- Drop sound when pieces land
+- Clear sound when lines are cleared
+- Game over sound when the game ends
+- Background music (classic Tetris theme)
 
 ### Scoring System
 

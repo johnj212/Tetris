@@ -1,9 +1,11 @@
 import pygame
 import random
 from typing import List, Tuple, Optional
+import os
 
-# Initialize Pygame
+# Initialize Pygame and Pygame mixer
 pygame.init()
+pygame.mixer.init()
 
 # Constants
 BLOCK_SIZE = 30
@@ -37,11 +39,42 @@ SHAPES = [
     [[0, 1, 1], [1, 1, 0]],  # Z
 ]
 
+# Sound effects
+class SoundManager:
+    def __init__(self):
+        self.sounds = {}
+        self.music = None
+        self.load_sounds()
+
+    def load_sounds(self):
+        # Load sound effects
+        self.sounds['move'] = pygame.mixer.Sound('audio/move.wav')
+        self.sounds['rotate'] = pygame.mixer.Sound('audio/rotate.wav')
+        self.sounds['drop'] = pygame.mixer.Sound('audio/drop.wav')
+        self.sounds['clear'] = pygame.mixer.Sound('audio/clear.wav')
+        self.sounds['gameover'] = pygame.mixer.Sound('audio/gameover.wav')
+        
+        # Load and start background music
+        pygame.mixer.music.load('audio/tetris_theme.mp3')
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)  # -1 means loop indefinitely
+
+    def play_sound(self, sound_name: str):
+        if sound_name in self.sounds:
+            self.sounds[sound_name].play()
+
+    def stop_music(self):
+        pygame.mixer.music.stop()
+
+    def resume_music(self):
+        pygame.mixer.music.play(-1)
+
 class Tetris:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
+        self.sound_manager = SoundManager()
         self.reset_game()
 
     def reset_game(self):
@@ -56,6 +89,7 @@ class Tetris:
         self.game_over = False
         self.fall_time = 0
         self.fall_speed = 1000  # Initial fall speed in milliseconds
+        self.sound_manager.resume_music()
 
     def new_piece(self) -> dict:
         shape_idx = random.randint(0, len(SHAPES) - 1)
@@ -103,6 +137,8 @@ class Tetris:
         
         if not self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y']):
             self.game_over = True
+            self.sound_manager.play_sound('gameover')
+            self.sound_manager.stop_music()
 
     def clear_lines(self) -> int:
         lines_cleared = 0
@@ -111,6 +147,7 @@ class Tetris:
                 del self.grid[i]
                 self.grid.insert(0, [0 for _ in range(GRID_WIDTH)])
                 lines_cleared += 1
+                self.sound_manager.play_sound('clear')
         return lines_cleared
 
     def update_score(self, lines_cleared: int):
@@ -208,20 +245,25 @@ class Tetris:
                     if event.key == pygame.K_LEFT:
                         if self.valid_move(self.current_piece, self.current_piece['x'] - 1, self.current_piece['y']):
                             self.current_piece['x'] -= 1
+                            self.sound_manager.play_sound('move')
                     elif event.key == pygame.K_RIGHT:
                         if self.valid_move(self.current_piece, self.current_piece['x'] + 1, self.current_piece['y']):
                             self.current_piece['x'] += 1
+                            self.sound_manager.play_sound('move')
                     elif event.key == pygame.K_DOWN:
                         if self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
                             self.current_piece['y'] += 1
+                            self.sound_manager.play_sound('move')
                     elif event.key == pygame.K_UP:
                         rotated = self.rotate_piece(self.current_piece)
                         if self.valid_move(rotated, rotated['x'], rotated['y']):
                             self.current_piece = rotated
+                            self.sound_manager.play_sound('rotate')
                     elif event.key == pygame.K_SPACE:
                         while self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
                             self.current_piece['y'] += 1
                         self.place_piece(self.current_piece)
+                        self.sound_manager.play_sound('drop')
                     elif event.key == pygame.K_c:
                         if self.can_hold:
                             if self.held_piece:
@@ -233,6 +275,7 @@ class Tetris:
                                 self.current_piece = self.next_piece
                                 self.next_piece = self.new_piece()
                             self.can_hold = False
+                            self.sound_manager.play_sound('move')
                 elif event.type == pygame.KEYDOWN and self.game_over:
                     if event.key == pygame.K_r:
                         self.reset_game()
@@ -244,6 +287,7 @@ class Tetris:
                     else:
                         self.place_piece(self.current_piece)
                         self.can_hold = True
+                        self.sound_manager.play_sound('drop')
                     self.fall_time = current_time
 
             self.draw()
