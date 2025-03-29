@@ -1,0 +1,150 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: white;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    max-width: 100vw;
+}
+
+#gameCanvas {
+    border: 2px solid #333;
+    background-color: black;
+    max-width: 100%;
+    height: auto;
+}
+
+#game-info {
+    margin-top: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+#nextPieceCanvas, #heldPieceCanvas {
+    border: 1px solid #333;
+    background-color: black;
+    margin: 5px auto;
+    display: block;
+    max-width: 100px;
+    height: auto;
+}
+
+#controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#touch-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+}
+
+#direction-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+
+button {
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 18px;
+    touch-action: manipulation;
+}
+
+button:active {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+#rotate-btn {
+    grid-column: 1;
+}
+
+#hold-btn {
+    grid-column: 3;
+}
+
+#drop-btn {
+    grid-column: 1 / span 3;
+}
+
+#pause-btn {
+    width: 100%;
+    max-width: 300px;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.game-over-content {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.game-over-content h2 {
+    margin-bottom: 10px;
+}
+
+#restart-btn {
+    margin-top: 20px;
+    background-color: #4CAF50;
+    padding: 10px 20px;
+}
+
+@media (orientation: landscape) {
+    #game-container {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    #game-info {
+        margin-top: 0;
+    }
+} 

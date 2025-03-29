@@ -1,24 +1,25 @@
-# Python Tetris Game
+# Web Tetris Game
 
-A modern implementation of the classic Tetris game using Python and Pygame.
+A modern web-based implementation of the classic Tetris game, optimized for mobile devices.
 
 ## Features
 
 - Classic Tetris gameplay
+- Mobile-optimized touch controls
 - Score tracking
 - Level system with increasing speed
 - Next piece preview
 - Hold piece functionality
-- Ghost piece (shows where the piece will land)
-- Modern UI elements
-- Game over screen with restart option
 - Star Wars Cantina Band background music and sound effects
 - Pause functionality
+- Responsive design for both portrait and landscape orientations
+- Works on iPhone and other mobile browsers
 
 ## Requirements
 
 - Python 3.6 or higher
-- Pygame 2.5.2
+- Flask 3.0.2
+- Modern web browser with JavaScript enabled
 
 ## Installation
 
@@ -34,16 +35,26 @@ python download_sounds.py
 
 ## How to Play
 
-Run the game:
+Start the server:
 ```bash
-python tetris.py
+python app.py
 ```
+
+Then open your browser and navigate to:
+- Local: `http://localhost:5000`
+- Mobile: `http://<your-computer-ip>:5000`
 
 ### Controls
 
-- **Left Arrow**: Move piece left
-- **Right Arrow**: Move piece right
-- **Down Arrow**: Move piece down faster
+#### Touch Controls (Mobile)
+- **Left/Right/Down Buttons**: Move piece
+- **Rotate Button**: Rotate piece
+- **Drop Button**: Hard drop (instantly drop piece)
+- **Hold Button**: Hold current piece
+- **Pause Button**: Pause/Unpause game
+
+#### Keyboard Controls (Desktop)
+- **Left/Right/Down Arrows**: Move piece
 - **Up Arrow**: Rotate piece
 - **Space**: Hard drop (instantly drop piece)
 - **C**: Hold piece
@@ -67,4 +78,13 @@ The game includes the following sound effects:
 - 3 lines: 500 points × level
 - 4 lines: 800 points × level
 
-The game speed increases as you level up. Each level is reached by clearing 10 lines. 
+The game speed increases as you level up. Each level is reached by clearing 10 lines.
+
+## Mobile Browser Compatibility
+
+The game is optimized for mobile browsers and includes:
+- Touch-friendly controls
+- Responsive layout that adapts to screen orientation
+- Prevention of unwanted scrolling/zooming during gameplay
+- Full-screen experience
+- Audio support (may require user interaction to start on iOS) 

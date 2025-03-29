@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tetris Web</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="game-info">
+            <div id="score">Score: 0</div>
+            <div id="level">Level: 1</div>
+            <div id="next-piece">Next Piece:</div>
+            <canvas id="nextPieceCanvas"></canvas>
+            <div id="held-piece">Held Piece:</div>
+            <canvas id="heldPieceCanvas"></canvas>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div id="touch-controls">
+            <button id="rotate-btn">Rotate</button>
+            <button id="hold-btn">Hold</button>
+            <div id="direction-controls">
+                <button id="left-btn">←</button>
+                <button id="down-btn">↓</button>
+                <button id="right-btn">→</button>
+            </div>
+            <button id="drop-btn">Drop</button>
+        </div>
+        <button id="pause-btn">Pause</button>
+    </div>
+
+    <div id="game-over" class="hidden">
+        <div class="game-over-content">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/tetris.js') }}"></script>
+</body>
+</html> 
