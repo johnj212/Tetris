@@ -12,7 +12,7 @@ A modern implementation of the classic Tetris game using Python and Pygame.
 - Ghost piece (shows where the piece will land)
 - Modern UI elements
 - Game over screen with restart option
-- Classic Tetris music and sound effects
+- Star Wars Cantina Band background music and sound effects
 
 ## Requirements
 
@@ -56,7 +56,7 @@ The game includes the following sound effects:
 - Drop sound when pieces land
 - Clear sound when lines are cleared
 - Game over sound when the game ends
-- Background music (classic Tetris theme)
+- Background music (Star Wars Cantina Band theme)
 
 ### Scoring System
 

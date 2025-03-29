@@ -22,7 +22,7 @@ def main():
         'drop.wav': 'https://freesound.org/data/previews/320/320654_5260872-lq.mp3',
         'clear.wav': 'https://freesound.org/data/previews/320/320654_5260872-lq.mp3',
         'gameover.wav': 'https://freesound.org/data/previews/320/320654_5260872-lq.mp3',
-        'tetris_theme.mp3': 'https://freesound.org/data/previews/320/320654_5260872-lq.mp3'
+        'tetris_theme.mp3': 'https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.mp3'  # Star Wars Cantina Band
     }
 
     # Download each sound file
