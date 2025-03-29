@@ -31,7 +31,7 @@ class TetrisGame {
         this.initGame();
         this.initControls();
         this.initAudio();
-        this.startGame();
+        this.startGameLoop();
     }
 
     initCanvas() {
@@ -105,7 +105,7 @@ class TetrisGame {
 
             const handleEvent = (e) => {
                 e.preventDefault();
-                if (!this.gameOver) {
+                if (buttonId === 'restart-btn' || !this.gameOver) {
                     action();
                 }
             };
@@ -126,18 +126,24 @@ class TetrisGame {
     }
 
     initAudio() {
-        this.audio = {
-            move: new Audio('/audio/move.wav'),
-            rotate: new Audio('/audio/rotate.wav'),
-            drop: new Audio('/audio/drop.wav'),
-            clear: new Audio('/audio/clear.wav'),
-            gameOver: new Audio('/audio/gameover.wav')
-        };
-
-        // Background music
         this.bgMusic = new Audio('/audio/tetris_theme.mp3');
         this.bgMusic.loop = true;
         this.bgMusic.volume = 0.5;
+
+        this.clearSound = new Audio('/audio/clear.wav');
+        this.clearSound.volume = 0.3;
+
+        this.dropSound = new Audio('/audio/drop.wav');
+        this.dropSound.volume = 0.3;
+
+        this.gameOverSound = new Audio('/audio/gameover.wav');
+        this.gameOverSound.volume = 0.3;
+
+        this.holdSound = new Audio('/audio/move.wav');
+        this.holdSound.volume = 0.3;
+
+        this.rotateSound = new Audio('/audio/rotate.wav');
+        this.rotateSound.volume = 0.3;
     }
 
     newPiece() {
@@ -154,7 +160,7 @@ class TetrisGame {
         if (this.isValidMove(this.currentPiece.x + dx, this.currentPiece.y + dy, this.currentPiece.shape)) {
             this.currentPiece.x += dx;
             this.currentPiece.y += dy;
-            if (dx !== 0 || dy !== 0) this.audio.move.play();
+            if (dx !== 0 || dy !== 0) this.rotateSound.play();
             return true;
         }
         return false;
@@ -164,7 +170,7 @@ class TetrisGame {
         const rotated = this.rotate(this.currentPiece.shape);
         if (this.isValidMove(this.currentPiece.x, this.currentPiece.y, rotated)) {
             this.currentPiece.shape = rotated;
-            this.audio.rotate.play();
+            this.rotateSound.play();
         }
     }
 
@@ -223,7 +229,7 @@ class TetrisGame {
             color: temp.color
         };
         this.canHold = false;
-        this.audio.move.play();
+        this.holdSound.play();
     }
 
     placePiece() {
@@ -232,7 +238,7 @@ class TetrisGame {
                 if (this.currentPiece.shape[r][c]) {
                     if (this.currentPiece.y + r < 0) {
                         this.gameOver = true;
-                        this.audio.gameOver.play();
+                        this.gameOverSound.play();
                         this.bgMusic.pause();
                         document.getElementById('game-over').classList.remove('hidden');
                         document.getElementById('final-score').textContent = this.score;
@@ -243,7 +249,7 @@ class TetrisGame {
             }
         }
 
-        this.audio.drop.play();
+        this.dropSound.play();
         this.clearLines();
         this.currentPiece = this.nextPiece;
         this.nextPiece = this.newPiece();
@@ -262,7 +268,7 @@ class TetrisGame {
         }
         
         if (linesCleared > 0) {
-            this.audio.clear.play();
+            this.clearSound.play();
             this.updateScore(linesCleared);
         }
     }
@@ -350,11 +356,44 @@ class TetrisGame {
     }
 
     restart() {
+        // Reset game state
         this.initGame();
+        
+        // Reset UI
         document.getElementById('game-over').classList.add('hidden');
         document.getElementById('pause-overlay').classList.add('hidden');
+        
+        // Reset audio
         this.bgMusic.currentTime = 0;
         this.bgMusic.play();
+        
+        // Reset game loop
+        this.lastDrop = Date.now();
+        if (this.gameLoop) {
+            cancelAnimationFrame(this.gameLoop);
+            this.gameLoop = null;
+        }
+        
+        // Force a redraw
+        this.draw();
+        
+        // Start new game loop
+        this.startGameLoop();
+    }
+
+    startGameLoop() {
+        if (this.gameLoop) {
+            cancelAnimationFrame(this.gameLoop);
+        }
+        
+        this.gameLoop = () => {
+            this.update();
+            this.draw();
+            if (!this.gameOver && !this.paused) {
+                requestAnimationFrame(this.gameLoop);
+            }
+        };
+        this.gameLoop();
     }
 
     update() {
@@ -366,17 +405,19 @@ class TetrisGame {
                 }
                 this.lastDrop = now;
             }
-        }
-    }
 
-    startGame() {
-        this.bgMusic.play();
-        const gameLoop = () => {
-            this.update();
-            this.draw();
-            requestAnimationFrame(gameLoop);
-        };
-        gameLoop();
+            // Check for game over condition
+            for (let c = 0; c < GRID_WIDTH; c++) {
+                if (this.grid[0][c] !== 0) {
+                    this.gameOver = true;
+                    this.gameOverSound.play();
+                    this.bgMusic.pause();
+                    document.getElementById('game-over').classList.remove('hidden');
+                    document.getElementById('final-score').textContent = this.score;
+                    return;
+                }
+            }
+        }
     }
 }
 
