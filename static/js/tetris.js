@@ -30,7 +30,6 @@ class TetrisGame {
         this.initCanvas();
         this.initGame();
         this.initControls();
-        this.initAudio();
         this.startGameLoop();
     }
 
@@ -42,13 +41,13 @@ class TetrisGame {
         this.heldCanvas = document.getElementById('heldPieceCanvas');
         this.heldCtx = this.heldCanvas.getContext('2d');
 
-        // Set canvas sizes
-        this.canvas.width = BLOCK_SIZE * GRID_WIDTH;
-        this.canvas.height = BLOCK_SIZE * GRID_HEIGHT;
-        this.nextCanvas.width = BLOCK_SIZE * 4;
-        this.nextCanvas.height = BLOCK_SIZE * 4;
-        this.heldCanvas.width = BLOCK_SIZE * 4;
-        this.heldCanvas.height = BLOCK_SIZE * 4;
+        // Set canvas size
+        this.canvas.width = GRID_WIDTH * BLOCK_SIZE;
+        this.canvas.height = GRID_HEIGHT * BLOCK_SIZE;
+        this.nextCanvas.width = 4 * BLOCK_SIZE;
+        this.nextCanvas.height = 4 * BLOCK_SIZE;
+        this.heldCanvas.width = 4 * BLOCK_SIZE;
+        this.heldCanvas.height = 4 * BLOCK_SIZE;
     }
 
     initGame() {
@@ -58,12 +57,13 @@ class TetrisGame {
         this.linesCleared = 0;
         this.gameOver = false;
         this.paused = false;
-        this.currentPiece = this.newPiece();
-        this.nextPiece = this.newPiece();
-        this.heldPiece = null;
         this.canHold = true;
-        this.dropInterval = 1000;
+        this.heldPiece = null;
+        this.currentPiece = this.getRandomPiece();
+        this.nextPiece = this.getRandomPiece();
         this.lastDrop = Date.now();
+        this.dropInterval = 1000;
+        this.gameLoop = null;
     }
 
     initControls() {
@@ -125,28 +125,66 @@ class TetrisGame {
         addButtonEvents('restart-btn', () => this.restart());
     }
 
-    initAudio() {
-        this.bgMusic = new Audio('/audio/tetris_theme.mp3');
-        this.bgMusic.loop = true;
-        this.bgMusic.volume = 0.5;
-
-        this.clearSound = new Audio('/audio/clear.wav');
-        this.clearSound.volume = 0.3;
-
-        this.dropSound = new Audio('/audio/drop.wav');
-        this.dropSound.volume = 0.3;
-
-        this.gameOverSound = new Audio('/audio/gameover.wav');
-        this.gameOverSound.volume = 0.3;
-
-        this.holdSound = new Audio('/audio/move.wav');
-        this.holdSound.volume = 0.3;
-
-        this.rotateSound = new Audio('/audio/rotate.wav');
-        this.rotateSound.volume = 0.3;
+    restart() {
+        // Reset game state
+        this.initGame();
+        
+        // Reset UI
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('pause-overlay').classList.add('hidden');
+        
+        // Reset game loop
+        this.lastDrop = Date.now();
+        if (this.gameLoop) {
+            cancelAnimationFrame(this.gameLoop);
+            this.gameLoop = null;
+        }
+        
+        // Force a redraw
+        this.draw();
+        
+        // Start new game loop
+        this.startGameLoop();
     }
 
-    newPiece() {
+    startGameLoop() {
+        if (this.gameLoop) {
+            cancelAnimationFrame(this.gameLoop);
+        }
+        
+        this.gameLoop = () => {
+            this.update();
+            this.draw();
+            if (!this.gameOver && !this.paused) {
+                requestAnimationFrame(this.gameLoop);
+            }
+        };
+        this.gameLoop();
+    }
+
+    update() {
+        if (!this.gameOver && !this.paused) {
+            const now = Date.now();
+            if (now - this.lastDrop > this.dropInterval) {
+                if (!this.movePiece(0, 1)) {
+                    this.placePiece();
+                }
+                this.lastDrop = now;
+            }
+
+            // Check for game over condition
+            for (let c = 0; c < GRID_WIDTH; c++) {
+                if (this.grid[0][c] !== 0) {
+                    this.gameOver = true;
+                    document.getElementById('game-over').classList.remove('hidden');
+                    document.getElementById('final-score').textContent = this.score;
+                    return;
+                }
+            }
+        }
+    }
+
+    getRandomPiece() {
         const shapeIdx = Math.floor(Math.random() * SHAPES.length);
         return {
             shape: SHAPES[shapeIdx],
@@ -160,7 +198,6 @@ class TetrisGame {
         if (this.isValidMove(this.currentPiece.x + dx, this.currentPiece.y + dy, this.currentPiece.shape)) {
             this.currentPiece.x += dx;
             this.currentPiece.y += dy;
-            if (dx !== 0 || dy !== 0) this.rotateSound.play();
             return true;
         }
         return false;
@@ -170,7 +207,6 @@ class TetrisGame {
         const rotated = this.rotate(this.currentPiece.shape);
         if (this.isValidMove(this.currentPiece.x, this.currentPiece.y, rotated)) {
             this.currentPiece.shape = rotated;
-            this.rotateSound.play();
         }
     }
 
@@ -215,7 +251,7 @@ class TetrisGame {
         const temp = this.currentPiece;
         if (this.heldPiece === null) {
             this.currentPiece = this.nextPiece;
-            this.nextPiece = this.newPiece();
+            this.nextPiece = this.getRandomPiece();
         } else {
             this.currentPiece = {
                 shape: this.heldPiece.shape,
@@ -229,7 +265,6 @@ class TetrisGame {
             color: temp.color
         };
         this.canHold = false;
-        this.holdSound.play();
     }
 
     placePiece() {
@@ -238,8 +273,6 @@ class TetrisGame {
                 if (this.currentPiece.shape[r][c]) {
                     if (this.currentPiece.y + r < 0) {
                         this.gameOver = true;
-                        this.gameOverSound.play();
-                        this.bgMusic.pause();
                         document.getElementById('game-over').classList.remove('hidden');
                         document.getElementById('final-score').textContent = this.score;
                         return;
@@ -249,10 +282,9 @@ class TetrisGame {
             }
         }
 
-        this.dropSound.play();
         this.clearLines();
         this.currentPiece = this.nextPiece;
-        this.nextPiece = this.newPiece();
+        this.nextPiece = this.getRandomPiece();
         this.canHold = true;
     }
 
@@ -268,7 +300,6 @@ class TetrisGame {
         }
         
         if (linesCleared > 0) {
-            this.clearSound.play();
             this.updateScore(linesCleared);
         }
     }
@@ -352,71 +383,6 @@ class TetrisGame {
         } else {
             pauseOverlay.classList.add('hidden');
             this.startGameLoop();
-        }
-    }
-
-    restart() {
-        // Reset game state
-        this.initGame();
-        
-        // Reset UI
-        document.getElementById('game-over').classList.add('hidden');
-        document.getElementById('pause-overlay').classList.add('hidden');
-        
-        // Reset audio
-        this.bgMusic.currentTime = 0;
-        this.bgMusic.play();
-        
-        // Reset game loop
-        this.lastDrop = Date.now();
-        if (this.gameLoop) {
-            cancelAnimationFrame(this.gameLoop);
-            this.gameLoop = null;
-        }
-        
-        // Force a redraw
-        this.draw();
-        
-        // Start new game loop
-        this.startGameLoop();
-    }
-
-    startGameLoop() {
-        if (this.gameLoop) {
-            cancelAnimationFrame(this.gameLoop);
-        }
-        
-        this.gameLoop = () => {
-            this.update();
-            this.draw();
-            if (!this.gameOver && !this.paused) {
-                requestAnimationFrame(this.gameLoop);
-            }
-        };
-        this.gameLoop();
-    }
-
-    update() {
-        if (!this.gameOver && !this.paused) {
-            const now = Date.now();
-            if (now - this.lastDrop > this.dropInterval) {
-                if (!this.movePiece(0, 1)) {
-                    this.placePiece();
-                }
-                this.lastDrop = now;
-            }
-
-            // Check for game over condition
-            for (let c = 0; c < GRID_WIDTH; c++) {
-                if (this.grid[0][c] !== 0) {
-                    this.gameOver = true;
-                    this.gameOverSound.play();
-                    this.bgMusic.pause();
-                    document.getElementById('game-over').classList.remove('hidden');
-                    document.getElementById('final-score').textContent = this.score;
-                    return;
-                }
-            }
         }
     }
 }
