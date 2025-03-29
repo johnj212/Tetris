@@ -13,6 +13,7 @@ A modern implementation of the classic Tetris game using Python and Pygame.
 - Modern UI elements
 - Game over screen with restart option
 - Star Wars Cantina Band background music and sound effects
+- Pause functionality
 
 ## Requirements
 
@@ -46,6 +47,7 @@ python tetris.py
 - **Up Arrow**: Rotate piece
 - **Space**: Hard drop (instantly drop piece)
 - **C**: Hold piece
+- **P**: Pause/Unpause game
 - **R**: Restart game (when game is over)
 
 ### Sound Effects

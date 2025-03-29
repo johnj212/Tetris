@@ -69,6 +69,12 @@ class SoundManager:
     def resume_music(self):
         pygame.mixer.music.play(-1)
 
+    def pause_music(self):
+        pygame.mixer.music.pause()
+
+    def unpause_music(self):
+        pygame.mixer.music.unpause()
+
 class Tetris:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -76,6 +82,7 @@ class Tetris:
         self.clock = pygame.time.Clock()
         self.sound_manager = SoundManager()
         self.reset_game()
+        self.paused = False
 
     def reset_game(self):
         self.grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
@@ -90,6 +97,7 @@ class Tetris:
         self.fall_time = 0
         self.fall_speed = 1000  # Initial fall speed in milliseconds
         self.sound_manager.resume_music()
+        self.paused = False
 
     def new_piece(self) -> dict:
         shape_idx = random.randint(0, len(SHAPES) - 1)
@@ -174,7 +182,7 @@ class Tetris:
                                    (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1))
 
         # Draw current piece
-        if not self.game_over:
+        if not self.game_over and not self.paused:
             for i, row in enumerate(self.current_piece['shape']):
                 for j, cell in enumerate(row):
                     if cell:
@@ -229,6 +237,10 @@ class Tetris:
             game_over_text = font.render('GAME OVER', True, (255, 0, 0))
             self.screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2,
                                             SCREEN_HEIGHT // 2))
+        elif self.paused:
+            pause_text = font.render('PAUSED', True, (255, 255, 0))
+            self.screen.blit(pause_text, (SCREEN_WIDTH // 2 - pause_text.get_width() // 2,
+                                        SCREEN_HEIGHT // 2))
 
         pygame.display.flip()
 
@@ -241,46 +253,52 @@ class Tetris:
                     pygame.quit()
                     return
                 
-                if event.type == pygame.KEYDOWN and not self.game_over:
-                    if event.key == pygame.K_LEFT:
-                        if self.valid_move(self.current_piece, self.current_piece['x'] - 1, self.current_piece['y']):
-                            self.current_piece['x'] -= 1
-                            self.sound_manager.play_sound('move')
-                    elif event.key == pygame.K_RIGHT:
-                        if self.valid_move(self.current_piece, self.current_piece['x'] + 1, self.current_piece['y']):
-                            self.current_piece['x'] += 1
-                            self.sound_manager.play_sound('move')
-                    elif event.key == pygame.K_DOWN:
-                        if self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
-                            self.current_piece['y'] += 1
-                            self.sound_manager.play_sound('move')
-                    elif event.key == pygame.K_UP:
-                        rotated = self.rotate_piece(self.current_piece)
-                        if self.valid_move(rotated, rotated['x'], rotated['y']):
-                            self.current_piece = rotated
-                            self.sound_manager.play_sound('rotate')
-                    elif event.key == pygame.K_SPACE:
-                        while self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
-                            self.current_piece['y'] += 1
-                        self.place_piece(self.current_piece)
-                        self.sound_manager.play_sound('drop')
-                    elif event.key == pygame.K_c:
-                        if self.can_hold:
-                            if self.held_piece:
-                                self.current_piece, self.held_piece = self.held_piece, self.current_piece
-                                self.current_piece['x'] = GRID_WIDTH // 2 - len(self.current_piece['shape'][0]) // 2
-                                self.current_piece['y'] = 0
-                            else:
-                                self.held_piece = self.current_piece
-                                self.current_piece = self.next_piece
-                                self.next_piece = self.new_piece()
-                            self.can_hold = False
-                            self.sound_manager.play_sound('move')
-                elif event.type == pygame.KEYDOWN and self.game_over:
-                    if event.key == pygame.K_r:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p and not self.game_over:  # Pause/Unpause
+                        self.paused = not self.paused
+                        if self.paused:
+                            self.sound_manager.pause_music()
+                        else:
+                            self.sound_manager.unpause_music()
+                    elif not self.paused and not self.game_over:
+                        if event.key == pygame.K_LEFT:
+                            if self.valid_move(self.current_piece, self.current_piece['x'] - 1, self.current_piece['y']):
+                                self.current_piece['x'] -= 1
+                                self.sound_manager.play_sound('move')
+                        elif event.key == pygame.K_RIGHT:
+                            if self.valid_move(self.current_piece, self.current_piece['x'] + 1, self.current_piece['y']):
+                                self.current_piece['x'] += 1
+                                self.sound_manager.play_sound('move')
+                        elif event.key == pygame.K_DOWN:
+                            if self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
+                                self.current_piece['y'] += 1
+                                self.sound_manager.play_sound('move')
+                        elif event.key == pygame.K_UP:
+                            rotated = self.rotate_piece(self.current_piece)
+                            if self.valid_move(rotated, rotated['x'], rotated['y']):
+                                self.current_piece = rotated
+                                self.sound_manager.play_sound('rotate')
+                        elif event.key == pygame.K_SPACE:
+                            while self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
+                                self.current_piece['y'] += 1
+                            self.place_piece(self.current_piece)
+                            self.sound_manager.play_sound('drop')
+                        elif event.key == pygame.K_c:
+                            if self.can_hold:
+                                if self.held_piece:
+                                    self.current_piece, self.held_piece = self.held_piece, self.current_piece
+                                    self.current_piece['x'] = GRID_WIDTH // 2 - len(self.current_piece['shape'][0]) // 2
+                                    self.current_piece['y'] = 0
+                                else:
+                                    self.held_piece = self.current_piece
+                                    self.current_piece = self.next_piece
+                                    self.next_piece = self.new_piece()
+                                self.can_hold = False
+                                self.sound_manager.play_sound('move')
+                    elif self.game_over and event.key == pygame.K_r:
                         self.reset_game()
 
-            if not self.game_over:
+            if not self.game_over and not self.paused:
                 if current_time - self.fall_time > self.fall_speed:
                     if self.valid_move(self.current_piece, self.current_piece['x'], self.current_piece['y'] + 1):
                         self.current_piece['y'] += 1
